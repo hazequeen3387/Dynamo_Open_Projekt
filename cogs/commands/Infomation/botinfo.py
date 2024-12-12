@@ -6,6 +6,7 @@ import platform
 import ezcord
 import psutil
 import time
+import sqlite3
 
 class BotInfoCog(commands.Cog):
     def __init__(self, bot):
@@ -65,10 +66,21 @@ class BotInfoCog(commands.Cog):
         python_version = platform.python_version()
         cpu_usage = psutil.cpu_percent()
         memory_usage = psutil.virtual_memory().percent
-        websocket_latency = round(self.bot.latency * 1000)
         pycord_version = discord.__version__
         ezcord_version = ezcord.__version__
+        bot_latency = round(self.bot.latency * 1000, 2)
+        api_start = time.perf_counter()
+        await ctx.respond("<:load:1316792001454411840> | Lade bot-infos...", ephemeral=False)
+        api_latency = round((time.perf_counter() - api_start) * 1000, 2)
+        db_start = time.perf_counter()
+        conn = sqlite3.connect("database/latency_test.db")
+        cursor = conn.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS ping_test (id INTEGER PRIMARY KEY)")
+        conn.commit()
+        db_latency = round((time.perf_counter() - db_start) * 1000, 2)
+        conn.close()
         uptime = self.get_uptime()   
+
 
         embed = discord.Embed(color=0x00ff00)
         embed.set_thumbnail(url=bot_avatar)
@@ -76,7 +88,7 @@ class BotInfoCog(commands.Cog):
         embed.set_author(name=f"{bot_name}'s Information", icon_url=bot_avatar)
         embed.add_field(name="<:bot:1314904250987315230> About Bot", value=f"> Bot's Mention: <@!{bot_id}>\n > Bot's Username: {bot_username} \n > Bot's ID: {bot_id}\n > Bot's Owner: {team_name}", inline=False)
         embed.add_field(name="<:discordstats:1314912164837855313> Discord Stats", value=f"> Total Guilds: {guild_count}\n > Total Users: {total_members} \n > Total Channels: {total_channels}\n > Total Emojis: {total_emojis} \n > Total Commands: {total_commands} ", inline=False)
-        embed.add_field(name="<:system:1314917509563945030> System Info", value=f"> Total Shards: ``{total_shards}``\n > Uptime: ``{uptime}`` \n > CPU Usage: ``{cpu_usage}%``\n > Memory Usage: ``{memory_usage}%``\n > My Websocket Latency: ``{websocket_latency} ms``\n > Python Version: ``{python_version}``\n > pycord Version: ``{pycord_version}``\n > ezcord Version: ``{ezcord_version}``", inline=False)
+        embed.add_field(name="<:system:1314917509563945030> System Info", value=f"> Total Shards: ``{total_shards}``\n > Uptime: ``{uptime}`` \n > CPU Usage: ``{cpu_usage}%``\n > Memory Usage: ``{memory_usage}%``\n > My Websocket Latency: ``{bot_latency}ms`` ({bot_latency / 1000:.3f}s)\n> API Latency: ``{api_latency}ms`` ({api_latency / 1000:.3f}s) ms\n> Database Latency: ``{db_latency}ms`` ({db_latency / 1000:.3f}s)\n > Python Version: ``{python_version}``\n > pycord Version: ``{pycord_version}``\n > ezcord Version: ``{ezcord_version}``", inline=False)
 
         # Auswahlmenü (Select-Menu)
         select = Select(
@@ -94,7 +106,7 @@ class BotInfoCog(commands.Cog):
         async def select_callback(interaction):
             selected_value = select.values[0]
             
-            # Refresh statistics
+            
             guild_count = len(self.bot.guilds)
             total_members = sum(guild.member_count for guild in self.bot.guilds)
             total_channels = sum(len(guild.channels) for guild in self.bot.guilds)
@@ -102,7 +114,16 @@ class BotInfoCog(commands.Cog):
             total_commands = len(self.bot.application_commands)
             cpu_usage = psutil.cpu_percent()
             memory_usage = psutil.virtual_memory().percent
-            websocket_latency = round(self.bot.latency * 1000)
+            bot_latency = round(self.bot.latency * 1000, 2)
+            db_start = time.perf_counter()
+            conn = sqlite3.connect("database/latency_test.db")
+            cursor = conn.cursor()
+            cursor.execute("CREATE TABLE IF NOT EXISTS ping_test (id INTEGER PRIMARY KEY)")
+            conn.commit()
+            db_latency = round((time.perf_counter() - db_start) * 1000, 2)
+            conn.close()
+            
+            
             uptime = self.get_uptime()
 
             embed.clear_fields()
@@ -110,7 +131,7 @@ class BotInfoCog(commands.Cog):
             if selected_value == "home":
                 embed.add_field(name="<:bot:1314904250987315230> About Bot", value=f"> Bot's Mention: <@!{bot_id}>\n > Bot's Username: {bot_username} \n > Bot's ID: {bot_id}\n > Bot's Owner: {team_name}", inline=False)
                 embed.add_field(name="<:discordstats:1314912164837855313> Discord Stats", value=f"> Total Guilds: {guild_count}\n > Total Users: {total_members} \n > Total Channels: {total_channels}\n > Total Emojis: {total_emojis} \n > Total Commands: {total_commands} ", inline=False)
-                embed.add_field(name="<:system:1314917509563945030> System Info", value=f"> Total Shards: ``{total_shards}``\n > Uptime: ``{uptime}`` \n > CPU Usage: ``{cpu_usage}%``\n > Memory Usage: ``{memory_usage}%``\n > My Websocket Latency: ``{websocket_latency} ms``\n > Python Version: ``{python_version}``\n > pycord Version: ``{pycord_version}``\n > ezcord Version: ``{ezcord_version}``", inline=False)
+                embed.add_field(name="<:system:1314917509563945030> System Info", value=f"> Total Shards: ``{total_shards}``\n > Uptime: ``{uptime}`` \n > CPU Usage: ``{cpu_usage}%``\n > Memory Usage: ``{memory_usage}%``\n > My Websocket Latency: ``{bot_latency}ms`` ({bot_latency / 1000:.3f}s)\n > Database Latency: ``{db_latency}ms`` ({db_latency / 1000:.3f}s)\n > Python Version: ``{python_version}``\n > pycord Version: ``{pycord_version}``\n > ezcord Version: ``{ezcord_version}``", inline=False)
 
             elif selected_value == "about_bot":
                 embed.add_field(name="<:bot:1314904250987315230> About Bot", value=f"> Bot's Mention: <@!{bot_id}>\n > Bot's Username: {bot_username} \n > Bot's ID: {bot_id}\n > Bot's Owner: {team_name}\n > Created At: {bot_created_at}", inline=False)
@@ -119,7 +140,7 @@ class BotInfoCog(commands.Cog):
                 embed.add_field(name="<:discordstats:1314912164837855313> Discord Stats", value=f"> Total Guilds: {guild_count}\n > Total Users: {total_members} \n > Total Channels: {total_channels}\n > Total Emojis: {total_emojis} \n > Total Commands: {total_commands} ", inline=False)
 
             elif selected_value == "system_info":
-                embed.add_field(name="<:system:1314917509563945030> System Info", value=f"> CPU Usage: ``{cpu_usage}%``\n > Memory Usage: ``{memory_usage}%``\n > My Websocket Latency: ``{websocket_latency} ms``\n > Python Version: ``{python_version}``\n > pycord Version: ``{pycord_version}``\n > ezcord Version: ``{ezcord_version}``\n > Uptime: ``{uptime}``", inline=False)
+                embed.add_field(name="<:system:1314917509563945030> System Info", value=f"> CPU Usage: ``{cpu_usage}%``\n > Memory Usage: ``{memory_usage}%``\n > My Websocket Latency: ``{bot_latency}ms`` ({bot_latency / 1000:.3f}s)\n > Database Latency: ``{db_latency}ms`` ({db_latency / 1000:.3f}s)\n > Python Version: ``{python_version}``\n > pycord Version: ``{pycord_version}``\n > ezcord Version: ``{ezcord_version}``\n > Uptime: ``{uptime}``", inline=False)
 
             elif selected_value == "shard_info":
                 shard_info = []
@@ -141,7 +162,7 @@ class BotInfoCog(commands.Cog):
         view = View()
         view.add_item(select)
 
-        await ctx.respond(embed=embed, view=view)
+        await ctx.interaction.edit_original_response(content=None, embed=embed, view=view)
 
 def setup(bot):
     bot.add_cog(BotInfoCog(bot))
