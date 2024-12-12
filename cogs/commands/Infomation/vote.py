@@ -8,11 +8,11 @@ class VoteCommand(commands.Cog):
 
     @discord.slash_command(name="vote", description="✨ | jetzt für und bekomme ein großes Dankeschön!")
     async def vote(self, ctx):
-        vote_button = Button(label="Vote", url="https://top.gg/bot/1183600303476572251",emoji="<:top:1314723021583421612>")
+        vote_button = Button(label="Vote", url=f"https://top.gg/bot/{self.bot.user.id}",emoji="<:top:1314723021583421612>")
 
         embed = discord.Embed(
             title="<:vote:1314722633186807808> | Vote für mich!",
-            description="> <:Serveraufbau:1314707679016652950>   Vote mit dem unteren Button und trage einen großen Beitrag,\n >  zur Entwicklung bei.\n\n > <:messages:1314726452280688700> [Bot Hinzufügen](https://discord.com/oauth2/authorize?client_id=1183600303476572251) 〢 <:help:1314694961156984893> [Support](https://discord.gg/fRuCXJK85R)",
+            description="> <:Serveraufbau:1314707679016652950>   Vote mit dem unteren Button und trage einen großen Beitrag,\n >  zur Entwicklung bei.\n\n > <:bothinzufgen:1316779017059438673> [Bot Hinzufügen](https://discord.com/oauth2/authorize?client_id=1183600303476572251) 〢 <:help:1314694961156984893> [Support](https://discord.gg/fRuCXJK85R)",
             color=discord.Color.blue()
         )
         
