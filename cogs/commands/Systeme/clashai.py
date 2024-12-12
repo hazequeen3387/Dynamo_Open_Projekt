@@ -54,17 +54,21 @@ class chatbotAI(commands.Cog):
         conn.commit()
         conn.close()
 
-        await ctx.respond("AI has been disabled for this server", ephemeral=True)
+        embed = discord.Embed(
+            title="<:asfa_check:1316788717402194021> | Kanal für die KI erfolgreich deaktiviert:",
+            description=f"Der KI-Kanal wurde erfolgreich deaktiviert.\n\n <:bothinzufgen:1316779017059438673> [Bot Hinzufügen](https://discord.com/oauth2/authorize?client_id=1183600303476572251) 〢 <:help:1314694961156984893> [Support](https://discord.gg/fRuCXJK85R)",
+            color=discord.Color.green()
+        )
+        await ctx.respond(embed=embed)
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author.bot:
+        if message.author.bot or not message.guild:
             return
 
-        
         conn = sqlite3.connect('database/ai_setup.db')
         c = conn.cursor()
-        c.execute('SELECT channel_id FROM ai_channels WHERE guild_id = ?', (message.guild.id,))
+        c.execute('SELECT channel_id FROM ai_channels WHERE guild_id = ? ', (message.guild.id,))
         result = c.fetchone()
         conn.close()
 
@@ -80,10 +84,13 @@ class chatbotAI(commands.Cog):
                 {"role": "user", "content": message.content}
             ]
         }
-        headers = {'Authorization': 'Bearer sk-hrRJrEOfH6vJRuk6g4AzL52lPvUiS0gYLfkpMv5tO0GlnqiH'}
+        headers = {'Authorization': 'Bearer sk-L3qZCao6VKF4kcTX2EiueQtoR562pW52431jdJahMH8F3Iv2'}
 
         start_time = time.time()
-        response = requests.post(url, json=payload, headers=headers)
+
+        
+        async with message.channel.typing():
+            response = requests.post(url, json=payload, headers=headers)
 
         if response.ok:
             print(f"> Request took {round(time.time() - start_time, 2)} seconds")
@@ -100,12 +107,12 @@ class chatbotAI(commands.Cog):
             suggestions = []
 
         embed = discord.Embed(
-            title="ASFA Bot",
-            description=f"Response: {main_response}",
+            title="<:chatgpt:1316773144438247505> » Antwort:",
+            description=f"{main_response}",
             color=discord.Color.blue()
         )
 
-        embed.set_footer(text="AI Response")
+        embed.set_footer(text="Powered by c l a s h a i")
         
         class VerticalButtonView(discord.ui.View):
             def __init__(self):
@@ -123,7 +130,6 @@ class chatbotAI(commands.Cog):
 
         view = VerticalButtonView()
         
-    
         for i, suggestion in enumerate(suggestions[:3]):
             view.add_vertical_button(suggestion, i + 1)
 
