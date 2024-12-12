@@ -11,7 +11,7 @@ import sqlite3
 class BotInfoCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.start_time = time.time()  # Speichert den Startzeitpunkt des Bots in Sekunden
+        self.start_time = time.time()  
 
     def get_uptime(self):
         # Berechnet die Uptime des Bots
@@ -47,7 +47,7 @@ class BotInfoCog(commands.Cog):
         # Holen der Bot-Anwendungsinformationen
         application_info = await self.bot.application_info()
         
-        # Überprüfen, ob das Team des Bots vorhanden ist
+       
         if hasattr(application_info, 'team'):
             team_name = application_info.team.name
             team_members = application_info.team.members
